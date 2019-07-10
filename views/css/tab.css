@@ -1,0 +1,10 @@
+#subtab-PrintfulHome > a:before {
+    background: url('../../logo.png') no-repeat center;
+    background-size: contain;
+    content: '';
+    width: 19px;
+    height: 19px;
+    display: inline-block;
+    vertical-align: middle;
+}
+

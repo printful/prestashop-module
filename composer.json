@@ -1,0 +1,13 @@
+{
+  "name": "Printful/printful-prestashop-integration",
+  "description": "This module provides integration with Printful",
+  "autoload": {
+    "psr-4": {
+      "Printful\\": "src/"
+    }
+  },
+  "type": "prestashop-module",
+  "require": {
+    "php": "7.0"
+  }
+}

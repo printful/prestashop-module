@@ -1,0 +1,13 @@
+.printful-latest-orders {
+    display: table;
+    width: 100%;
+    margin-bottom: 50px;
+}
+
+.printful-latest-orders .row {
+    display: table-row;
+}
+
+.printful-latest-orders .row .cell {
+    display: table-cell;
+}

@@ -1,0 +1,40 @@
+.printful-quick-links {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.printful-quick-links .printful-quick-links-item {
+    width: 120px;
+    background: #fff;
+    border: solid 1px #e1e1e1;
+    float: left;
+    padding: 20px;
+    margin-right: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.printful-quick-links .printful-quick-links-item .dashicons {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    text-decoration: none;
+    color: #444;
+}
+
+.printful-quick-links .printful-quick-links-item h4 {
+    text-decoration: none;
+    color: #444;
+    margin: 5px 0 0 0;
+}
+
+.printful-quick-links .printful-quick-links-item:hover {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.printful-quick-links .printful-quick-links-item:hover .dashicons,
+.printful-quick-links .printful-quick-links-item:hover h4 {
+    color: #0D72B2;
+}
