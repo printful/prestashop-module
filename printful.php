@@ -72,7 +72,7 @@ class Printful extends Module
     const PRINTFUL_API_HOST = 'https://api.printful.com';
     const PRINTFUL_API_HOST_DEV = 'http://api.printful.test';
 
-    const PRINTFUL_PLUGIN_PATH = 'download-plugin/prestashop';
+    const PRINTFUL_PLUGIN_PATH = 'dashboard/prestashop/download';
 
     /**
      * Printful constructor.
