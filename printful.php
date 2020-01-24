@@ -78,10 +78,10 @@ class Printful extends Module
         $this->author = 'Printful';
         $this->need_instance = 1;
 
-        $this->ps_versions_compliancy = [
+        $this->ps_versions_compliancy = array(
             'min' => '1.6.1',
             'max' => _PS_VERSION_,
-        ];
+        );
         $this->bootstrap = true;
 
         parent::__construct();
