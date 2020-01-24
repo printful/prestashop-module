@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>printful</name>
+	<displayName><![CDATA[Printful: Print-on-demand dropshipping]]></displayName>
+	<version><![CDATA[1.0.2]]></version>
+	<description><![CDATA[Use Printful to design and sell your own shirts, hats, bags and more! We will handle inventory, production, and shipping, so you can focus on building your store.]]></description>
+	<author><![CDATA[Printful]]></author>
+	<tab><![CDATA[others]]></tab>
+	<confirmUninstall><![CDATA[Are you sure you want to uninstall?]]></confirmUninstall>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>
