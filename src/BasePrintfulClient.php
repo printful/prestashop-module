@@ -38,15 +38,9 @@ abstract class BasePrintfulClient
     public function __construct()
     {
         // setting up Guzzle client
-        $config = array(
+        $this->guzzle = new Client(array(
             'timeout' => 90,
-        );
-
-        $this->guzzle = new Client($config);
-
-        if (Printful::isDevMode()) {
-            $this->guzzle->setDefaultOption('verify', false);
-        }
+        ));
     }
 
     /**
@@ -96,6 +90,7 @@ abstract class BasePrintfulClient
     {
         $options = array(
             'headers' => $this->buildRequestHeaders($authData),
+            'verify' => !Printful::isDevMode(),
         );
 
         if (!$params) {

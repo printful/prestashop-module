@@ -8,6 +8,6 @@
   },
   "type": "prestashop-module",
   "require": {
-    "php": "7.0"
+    "guzzlehttp/guzzle": "5.3.3"
   }
 }

@@ -11,6 +11,7 @@ var PrintfulConnect = {
     statusCheckController: null,
     statusCheckAction: null,
     token: null,
+    oldPSVersion: false,
     init: function (params) {
         // setting up defaults
         this.formId = params.formId || null;
@@ -18,6 +19,7 @@ var PrintfulConnect = {
         this.statusCheckUrl = params.statusCheckUrl || null;
         this.statusCheckController = params.statusCheckController || null;
         this.statusCheckAction = params.statusCheckAction || null;
+        this.oldPSVersion = params.oldPSVersion || false;
 
         // wiring events
         this.wireEvents();
@@ -35,11 +37,16 @@ var PrintfulConnect = {
             var url = $(this).attr('action');
             var data = $(this).serialize();
 
-            url += '&printful_connect=1&' + data;
-            window.open(url);
+            if (!PrintfulConnect.oldPSVersion) {
+                url += '&' + data;
+                window.open(url);
 
-            // starting listening for connection status
-            PrintfulConnect.listenStatus();
+                // starting listening for connection status
+                PrintfulConnect.listenStatus();
+            } else {
+                document.location = url + '&oldPsVersion=1';
+            }
+
             e.preventDefault();
         });
     },

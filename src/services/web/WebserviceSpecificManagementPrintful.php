@@ -7,7 +7,6 @@
  * @license   GPL 3 license see LICENSE.txt
  */
 
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
 use Printful\services\ConnectService;
 use Printful\structures\PrintfulCredentials;
 
@@ -101,7 +100,7 @@ class WebserviceSpecificManagementPrintful implements WebserviceSpecificManageme
             $credentials = PrintfulCredentials::buildFromArray($credentialData);
 
             /** @var ConnectService $service */
-            $service = ServiceLocator::get(ConnectService::class);
+            $service = Printful::getService(ConnectService::class);
             $service->setPrintfulCredentials($credentials);
         } catch (Exception $exception) {
             throw new WebserviceException('Failed to set credentials: ' . $exception->getMessage(), array(self::ERROR_BAD_REQUEST_PARAMS, 405));
