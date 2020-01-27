@@ -25,7 +25,7 @@ class Printful extends Module
     const ENV_PROD = 'prod';
 
     // active env
-    const ENV = self::ENV_PROD;
+    const ENV = self::ENV_DEV;
 
     // PF Configuration keys
     const CONFIG_PRINTFUL_SERVICE_KEY_ID = 'PRINTFUL_SERVICE_KEY_ID';
@@ -78,10 +78,10 @@ class Printful extends Module
         $this->author = 'Printful';
         $this->need_instance = 1;
 
-        $this->ps_versions_compliancy = array(
+        $this->ps_versions_compliancy = [
             'min' => '1.6.1',
             'max' => _PS_VERSION_,
-        );
+        ];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -154,7 +154,7 @@ class Printful extends Module
      */
     public static function getService($className)
     {
-        if(class_exists('Adapter_ServiceLocator')) {
+        if (class_exists('Adapter_ServiceLocator')) {
             return Adapter_ServiceLocator::get($className);
         } elseif (class_exists('PrestaShop\PrestaShop\Adapter\ServiceLocator')) {
             return PrestaShop\PrestaShop\Adapter\ServiceLocator::get($className);

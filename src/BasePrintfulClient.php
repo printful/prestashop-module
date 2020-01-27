@@ -10,7 +10,6 @@
 namespace Printful;
 
 use Exception;
-use GuzzleHttp\Client;
 use Printful;
 use Printful\exceptions\PrintfulClientException;
 use Printful\exceptions\PrintfulResponseParseException;
@@ -29,20 +28,6 @@ abstract class BasePrintfulClient
     const REQUEST_POST = 'post';
     const REQUEST_DELETE = 'delete';
 
-    /** @var Client */
-    protected $guzzle;
-
-    /**
-     * PrintfulClient constructor.
-     */
-    public function __construct()
-    {
-        // setting up Guzzle client
-        $this->guzzle = new Client(array(
-            'timeout' => 90,
-        ));
-    }
-
     /**
      * @param string $method
      * @param string $url
@@ -53,55 +38,59 @@ abstract class BasePrintfulClient
      */
     protected function makeRequest($method, $url, $params = array(), PrintfulAuthData $authData = null)
     {
-        $options = $this->buildRequestOptions($method, $params, $authData);
+        $options = $this->buildRequestOptions($method, $url, $params, $authData);
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, $options);
         try {
-            switch ($method) {
-                case self::REQUEST_GET:
-                    $response = $this->guzzle->get($url, $options);
-                    break;
-                case self::REQUEST_POST:
-                    $response = $this->guzzle->post($url, $options);
-                    break;
-                default:
-                    throw new \InvalidArgumentException('Bad method given: ' . $method);
+            $response = curl_exec($curl);
+
+            if (!$response) {
+                throw new \Exception('cUrl Error: "' . curl_error($curl) . '" - Code: ' . curl_errno($curl));
             }
 
-            $contents = $response->getBody()->getContents();
-            $result = json_decode($contents, true);
+            $result = json_decode($response, true);
             $result = isset($result['result']) ? $result['result'] : null;
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new PrintfulResponseParseException('HTTP JSON response is not parsable', $response);
             }
-        } catch (Exception $exception) {
+
+            curl_close($curl);
+
+            return $result;
+        } catch (\Exception $exception) {
             throw $this->handleClientError($exception);
         }
-
-        return $result;
     }
 
     /**
      * @param string $method
+     * @param string $url
      * @param array $params
      * @param PrintfulAuthData $authData
      * @return array
      */
-    protected function buildRequestOptions($method, $params = array(), PrintfulAuthData $authData = null)
+    protected function buildRequestOptions($method, $url, $params = array(), PrintfulAuthData $authData = null)
     {
+        if ($method === self::REQUEST_GET && $params) {
+            $url .= '?' . http_build_query($params);
+        }
+
         $options = array(
-            'headers' => $this->buildRequestHeaders($authData),
-            'verify' => !Printful::isDevMode(),
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_URL => $url,
+            CURLOPT_USERAGENT => $this->getUserAgent(),
+            CURLOPT_SSL_VERIFYPEER => !Printful::isDevMode(),
+            CURLOPT_HTTPHEADER => $this->buildRequestHeaders($authData),
         );
 
-        if (!$params) {
-            return $options;
-        }
-
-        if ($method === self::REQUEST_GET) {
-            $options['query'] = $params;
-        } elseif ($method === self::REQUEST_POST) {
-            $options['body'] = json_encode($params);
-        }
+        if ($method === self::REQUEST_POST) {
+            $options[CURLOPT_POST] = 1;
+            $options[CURLOPT_POSTFIELDS] = $params;
+        };
 
         return $options;
     }
@@ -132,16 +121,20 @@ abstract class BasePrintfulClient
      */
     protected function buildRequestHeaders(PrintfulAuthData $authData = null)
     {
-        $printful = Printful::getInstance();
-
-        $headers = array(
-            'User-Agent' => BasePrintfulClient::USER_AGENT . ' v' . $printful->version,
-        );
+        $headers = array();
 
         if ($authData) {
-            $headers['Authorization'] = 'Basic ' . base64_encode($authData->apiKey);
+            $headers[] = 'Authorization: Basic ' . base64_encode($authData->apiKey);
         }
 
         return $headers;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getUserAgent()
+    {
+        return BasePrintfulClient::USER_AGENT . ' v' . Printful::getInstance()->version;
     }
 }

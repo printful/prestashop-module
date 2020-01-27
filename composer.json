@@ -1,13 +1,15 @@
 {
-  "name": "Printful/printful-prestashop-integration",
-  "description": "This module provides integration with Printful",
-  "autoload": {
-    "psr-4": {
-      "Printful\\": "src/"
+    "name": "Printful/printful-prestashop-integration",
+    "description": "This module provides integration with Printful",
+    "autoload": {
+        "psr-4": {
+            "Printful\\": "src/"
+        }
+    },
+    "config": {
+        "prepend-autoloader": false
+    },
+    "type": "prestashop-module",
+    "require": {
     }
-  },
-  "type": "prestashop-module",
-  "require": {
-    "guzzlehttp/guzzle": "5.3.3"
-  }
 }
