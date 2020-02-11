@@ -47,7 +47,7 @@ class PrintfulOrdersController extends BasePrintfulAdminController
         }
 
         $this->renderTemplate('orders', array(
-            'title' => $this->translator->trans('Orders'),
+            'title' => $this->module->l('Orders'),
             'orders' => $this->preProcessOrders($orders),
         ));
     }
