@@ -9,12 +9,6 @@
 
 require_once("BasePrintfulAdminController.php");
 
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
-use Printful\exceptions\PrintfulFailedLoadPermissions;
-use Printful\helpers\SystemHelper;
-use Printful\services\ConnectService;
-use Printful\services\WebserviceService;
-
 /**
  * Class PrintfulDashboardController
  * @property Printful $module
@@ -26,10 +20,10 @@ class PrintfulConnectController extends BasePrintfulAdminController
 
     const ERROR_NO_PERMISSIONS = 'no-permissions';
 
-    /** @var ConnectService */
+    /** @var Printful\services\ConnectService */
     private $connectService;
 
-    /** @var WebserviceService */
+    /** @var Printful\services\WebserviceService */
     private $webserviceService;
 
     /** @var bool */
@@ -45,8 +39,8 @@ class PrintfulConnectController extends BasePrintfulAdminController
         parent::__construct();
 
         // set dependencies
-        $this->connectService = ServiceLocator::get(ConnectService::class);
-        $this->webserviceService = ServiceLocator::get(WebserviceService::class);
+        $this->connectService = Printful::getService(Printful\services\ConnectService::class);
+        $this->webserviceService = Printful::getService(Printful\services\WebserviceService::class);
     }
 
     /**
@@ -82,7 +76,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
             $this->webserviceService->enableWebservice();
 
             // turn on CGI setting if necessary
-            if (SystemHelper::runningInCgi()) {
+            if (Printful\helpers\SystemHelper::runningInCgi()) {
                 $this->webserviceService->setCgiMode(true);
             }
 
@@ -95,7 +89,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
             // set/renew required permissions
             try {
                 $this->webserviceService->renewPermissions($webService);
-            } catch (PrintfulFailedLoadPermissions $exception) {
+            } catch (Printful\exceptions\PrintfulFailedLoadPermissions $exception) {
                 // if we created new service key, delete it
                 if (!$webServiceKeyId) {
                     $webService->delete();
@@ -112,7 +106,11 @@ class PrintfulConnectController extends BasePrintfulAdminController
 
             $authData = $this->connectService->buildAuthData($webService);
 
-            $redirectUrl = $this->connectService->buildConnectUrl($authData);
+            $returnUrl = Printful::isOlderPSVersion()
+                ? $this->connectService->buildReturnUrl()
+                : null;
+
+            $redirectUrl = $this->connectService->buildConnectUrl($authData, $returnUrl);
 
             Tools::redirect($redirectUrl);
         }
@@ -122,7 +120,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
             $this->connectService->disconnect();
 
             $redirectUrl = $this->context->link->getAdminLink(Printful::CONTROLLER_CONNECT);
-            Tools::redirect($redirectUrl);
+            Tools::redirectAdmin($redirectUrl);
         }
 
         $connectError = Tools::getValue('connectError');
@@ -140,7 +138,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
 
         $isConnected = Tools::getValue('connected');
         if ((bool)$isConnected) {
-            $this->informations[] = $this->translator->trans('You have successfully connected to Printful');
+            $this->informations[] = $this->module->l('You have successfully connected to Printful');
         }
 
         return true;
@@ -167,24 +165,25 @@ class PrintfulConnectController extends BasePrintfulAdminController
             Tools::redirectAdmin($this->context->link->getAdminLink(Printful::CONTROLLER_DASHBOARD));
         }
 
-        $webserviceOptions = array('0' => $this->translator->trans('Create new...'));
+        $webserviceOptions = array('0' => $this->module->l('Create new...'));
         foreach ($this->webserviceService->getAllWebservices() as $key) {
             $webserviceOptions[$key->id] = $key->description . ' (' . $key->key . ')';
         }
 
-        if (SystemHelper::runningInCgi()) {
-            $this->informations[] = $this->translator->trans('It looks like your server is running in CGI mode. We will turn on the `Enable CGI mode for PHP` setting during the connection process.');
+        if (Printful\helpers\SystemHelper::runningInCgi()) {
+            $this->informations[] = $this->module->l('It looks like your server is running in CGI mode. We will turn on the `Enable CGI mode for PHP` setting during the connection process.');
         }
-        $this->warnings = array_merge($this->warnings, SystemHelper::getSystemWarnings());
+        $this->warnings = array_merge($this->warnings, Printful\helpers\SystemHelper::getSystemWarnings());
 
         $smarty->assign(array(
             'content' => $this->content,
             'webserviceOptions' => $webserviceOptions,
-            'runningInCgi' => SystemHelper::runningInCgi(),
-            'action' => $this->context->link->getAdminLink(Printful::CONTROLLER_CONNECT),
+            'runningInCgi' => Printful\helpers\SystemHelper::runningInCgi(),
+            'action' => $this->context->link->getAdminLink(Printful::CONTROLLER_CONNECT) . '&printful_connect=1',
             'statusCheckUrl' => $this->context->link->getAdminLink(Printful::CONTROLLER_CONNECT),
             'statusCheckController' => Printful::CONTROLLER_CONNECT,
             'statusCheckAction' => self::ACTION_STATUS_CHECK,
+            'oldPSVersion' => Printful::isOlderPSVersion(),
             'logoPath' => $this->module->getPathUri() . 'views/img/printful-connect.svg',
         ));
 
@@ -192,7 +191,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
 
         $this->context->smarty->assign(array(
             'content' => $this->content,
-            'title' => $this->translator->trans('Connect to Printful'),
+            'title' => $this->module->l('Connect to Printful'),
         ));
     }
 
@@ -203,7 +202,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
     protected function getErrorMessage($error)
     {
         if ($error === self::ERROR_NO_PERMISSIONS) {
-            return $this->translator->trans('Connecting to Printful failed. (CODE: {code})', array('{code}' => self::ERROR_NO_PERMISSIONS));
+            return $this->module->l('Connecting to Printful failed. (CODE: {code})', array('{code}' => self::ERROR_NO_PERMISSIONS));
         }
 
         return null;

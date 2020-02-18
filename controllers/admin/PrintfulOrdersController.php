@@ -7,9 +7,6 @@
  * @license   GPL 3 license see LICENSE.txt
  */
 
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
-use Printful\PrintfulApi;
-
 require_once("BasePrintfulAdminController.php");
 
 /**
@@ -17,7 +14,7 @@ require_once("BasePrintfulAdminController.php");
  */
 class PrintfulOrdersController extends BasePrintfulAdminController
 {
-    /** @var PrintfulApi */
+    /** @var Printful\PrintfulApi */
     private $api;
 
     /**
@@ -29,7 +26,7 @@ class PrintfulOrdersController extends BasePrintfulAdminController
     {
         parent::__construct();
 
-        $this->api = ServiceLocator::get(PrintfulApi::class);
+        $this->api = Printful::getService(Printful\PrintfulApi::class);
     }
 
     /**
@@ -50,7 +47,7 @@ class PrintfulOrdersController extends BasePrintfulAdminController
         }
 
         $this->renderTemplate('orders', array(
-            'title' => $this->translator->trans('Orders'),
+            'title' => $this->module->l('Orders'),
             'orders' => $this->preProcessOrders($orders),
         ));
     }

@@ -10,10 +10,8 @@
 namespace Printful\services;
 
 use Module;
-use PrestaShopBundle\Entity\Repository\TabRepository;
 use Printful;
 use Tools;
-use WebserviceKeyCore;
 use Tab;
 use Language;
 use Configuration;
@@ -28,8 +26,7 @@ class InstallService
     /**
      * @param Printful $module
      * @return bool
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws \Adapter_Exception
      */
     public function install(Printful $module)
     {
@@ -38,8 +35,11 @@ class InstallService
             $this->installTab($module, $tab);
         }
 
-        // register Printful Webservice endpoint
-        $module->registerHook('addWebserviceResources');
+        if (!Printful::isOlderPSVersion()) {
+            // register Printful Webservice endpoint
+            $module->registerHook('addWebserviceResources');
+        }
+
         $module->registerHook('displayBackOfficeHeader');
 
         // remember plugin version
@@ -58,8 +58,7 @@ class InstallService
      * @param Printful $module
      * @param array $tabData
      * @return int
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws \Adapter_Exception
      */
     protected function installTab(Printful $module, $tabData)
     {
@@ -67,15 +66,12 @@ class InstallService
         $parent = isset($tabData['parent']) ? $tabData['parent'] : null;
         $tabName = isset($tabData['tabName']) ? $tabData['tabName'] : null;
 
-        if (!$className || !$parent) {
+        if (!$className) {
             return 0;
         }
 
-        $tabRepositoryId = 'prestashop.core.admin.tab.repository';
-        $tabRepository = $module->get($tabRepositoryId);
-
         $tab = new Tab();
-        $tab->id_parent = $tabRepository->findOneIdByClassName($parent);
+        $tab->id_parent = $parent ? Tab::getIdFromClassName($parent) : -1;
         $tab->name = array();
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = $tabName;
@@ -84,7 +80,9 @@ class InstallService
         $tab->module = $module->name;
         $tab->active = 1;
 
-        return $tab->add();
+        $result = $tab->add();
+
+        return  $result;
     }
 
     /**
@@ -110,6 +108,17 @@ class InstallService
                 'parent' => Printful::CONTROLLER_PRINTFUL,
                 'tabName' => $module->l('Orders'),
                 'className' => Printful::CONTROLLER_ORDERS,
+            ),
+            // no parent controllers
+            array(
+                'name' => Printful::CONTROLLER_CONNECT,
+                'className' => Printful::CONTROLLER_CONNECT,
+                'tabName' => Printful::CONTROLLER_CONNECT,
+            ),
+            array(
+                'name' => Printful::CONTROLLER_CONNECT_RETURN,
+                'className' => Printful::CONTROLLER_CONNECT_RETURN,
+                'tabName' => Printful::CONTROLLER_CONNECT_RETURN,
             ),
         );
     }

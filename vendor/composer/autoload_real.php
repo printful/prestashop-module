@@ -19,7 +19,7 @@ class ComposerAutoloaderInitde3bb5994be8ffc335079981fab72599
             return self::$loader;
         }
 
-        spl_autoload_register(array('ComposerAutoloaderInitde3bb5994be8ffc335079981fab72599', 'loadClassLoader'), true, true);
+        spl_autoload_register(array('ComposerAutoloaderInitde3bb5994be8ffc335079981fab72599', 'loadClassLoader'), true, false);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInitde3bb5994be8ffc335079981fab72599', 'loadClassLoader'));
 
@@ -45,7 +45,7 @@ class ComposerAutoloaderInitde3bb5994be8ffc335079981fab72599
             }
         }
 
-        $loader->register(true);
+        $loader->register(false);
 
         return $loader;
     }

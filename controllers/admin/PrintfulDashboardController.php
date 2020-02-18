@@ -9,28 +9,26 @@
 
 require_once("BasePrintfulAdminController.php");
 
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
-use Printful\PrintfulApi;
-
 /**
  * Class PrintfulDashboardController
  * @property Printful $module
  */
 class PrintfulDashboardController extends BasePrintfulAdminController
 {
-    /** @var PrintfulApi */
+    /** @var Printful\PrintfulApi */
     private $api;
 
     /**
      * PrintfulDashboardController constructor.
      * @throws PrestaShopException
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws Adapter_Exception
      */
     public function __construct()
     {
         parent::__construct();
 
-        $this->api = ServiceLocator::get(PrintfulApi::class);
+        $this->api = Printful::getService(Printful\PrintfulApi::class);
     }
 
     /**
@@ -44,7 +42,7 @@ class PrintfulDashboardController extends BasePrintfulAdminController
         $this->addCSS($this->getCssPath('dashboard.css'));
 
         $this->renderTemplate('dashboard', array(
-            'title' => $this->translator->trans('Dashboard'),
+            'title' => $this->l('Dashboard'),
             'shortcuts' => $this->getShortcuts(),
         ));
     }
@@ -59,37 +57,37 @@ class PrintfulDashboardController extends BasePrintfulAdminController
 
         return array(
             array(
-                'label' => $this->trans('Orders'),
+                'label' => $this->l('Orders'),
                 'icon' => 'shopping_cart',
                 'link' => $host . 'dashboard/default/orders',
             ),
             array(
-                'label' => $this->trans('File library'),
+                'label' => $this->l('File library'),
                 'icon' => 'library_books',
                 'link' => $host . 'dashboard/library',
             ),
             array(
-                'label' => $this->trans('Stores'),
+                'label' => $this->l('Stores'),
                 'icon' => 'store',
                 'link' => $host . 'dashboard/store',
             ),
             array(
-                'label' => $this->trans('Reports'),
+                'label' => $this->l('Reports'),
                 'icon' => 'table_chart',
                 'link' => $host . 'dashboard/reports',
             ),
             array(
-                'label' => $this->trans('My Account'),
+                'label' => $this->l('My Account'),
                 'icon' => 'account_box',
                 'link' => $host . 'dashboard/settings/account-settings',
             ),
             array(
-                'label' => $this->trans('Billing'),
+                'label' => $this->l('Billing'),
                 'icon' => 'attach_money',
                 'link' => $host . 'dashboard/billing',
             ),
             array(
-                'label' => $this->trans('Notifications'),
+                'label' => $this->l('Notifications'),
                 'icon' => 'event_note',
                 'link' => $host . 'dashboard/notifications',
             ),
@@ -109,13 +107,13 @@ class PrintfulDashboardController extends BasePrintfulAdminController
         $authData = $this->module->getAuthData();
         $stats = $this->api->getStoreStats($authData);
         if (!$stats) { // can't fetch stats
-
-            $disconnectUrl = $this->context->link->getAdminLink(Printful::CONTROLLER_CONNECT, true, array(), array('action' => 'disconnect'));
+          
+            
 
             $this->warnings[] = str_replace(
                 '{link}',
-                '<a href="' . $disconnectUrl . '">' . $this->l('reconnect your store') . '</a>',
-                $this->trans('Could not fetch store stats from Printful. Try to {link}!')
+                '<a href="' . Printful\Services\ConnectService::getDisconnectUrl() . '">' . $this->module->l('reconnect your store') . '</a>',
+                $this->module->l('Could not fetch store stats from Printful. Try to {link}!')
             );
 
             return;
@@ -124,21 +122,21 @@ class PrintfulDashboardController extends BasePrintfulAdminController
         $kpis = array();
         if (is_array($stats->orders_today)) {
             $kpi = $this->getOrderKpi($stats->orders_today);
-            $kpi->subtitle = $this->trans('Today');
+            $kpi->subtitle = $this->module->l('Today');
 
             $kpis[] = $kpi->generate();
         }
 
         if (is_array($stats->orders_last_7_days)) {
             $kpi = $this->getOrderKpi($stats->orders_last_7_days);
-            $kpi->subtitle = $this->trans('Last week');
+            $kpi->subtitle = $this->module->l('Last week');
 
             $kpis[] = $kpi->generate();
         }
 
         if (is_array($stats->orders_last_28_days)) {
             $kpi = $this->getOrderKpi($stats->orders_last_28_days);
-            $kpi->subtitle = $this->trans('Last month');
+            $kpi->subtitle = $this->module->l('Last month');
 
             $kpis[] = $kpi->generate();
         }
@@ -147,8 +145,8 @@ class PrintfulDashboardController extends BasePrintfulAdminController
         $kpi->id = 'profit';
         $kpi->icon = 'icon-money';
         $kpi->color = 'color1';
-        $kpi->title = $this->trans('Profit');
-        $kpi->subtitle = $this->trans('Last month');
+        $kpi->title = $this->module->l('Profit');
+        $kpi->subtitle = $this->l('Last month');
         $kpi->value = $stats->profit_last_28_days;
 
         $kpis[] = $kpi->generate();
@@ -172,7 +170,7 @@ class PrintfulDashboardController extends BasePrintfulAdminController
         $trend = isset($data['trend']) ? $data['trend'] : 'up';
 
         $kpi = new HelperKpi();
-        $kpi->title = $this->trans('Orders');
+        $kpi->title = $this->module->l('Orders');
         $kpi->icon = $trend === 'up' ? 'icon-arrow-up' : 'icon-arrow-down';
         $kpi->color = $trend === 'up' ? 'color1' : 'color2';
         $kpi->value = $count;
@@ -186,11 +184,9 @@ class PrintfulDashboardController extends BasePrintfulAdminController
      */
     public function initPageHeaderToolbar()
     {
-        $reconnectUrl = $this->context->link->getAdminLink(Printful::CONTROLLER_CONNECT, true, array(), array('action' => 'disconnect'));
-
         $this->page_header_toolbar_btn['reconnect_printful'] = array(
-            'href' => $reconnectUrl,
-            'desc' => $this->trans('Reconnect Printful'),
+            'href' => Printful\Services\ConnectService::getDisconnectUrl(),
+            'desc' => $this->module->l('Reconnect Printful'),
             'icon' => 'process-icon-retweet icon-retweet',
         );
 

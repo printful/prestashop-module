@@ -68,7 +68,7 @@ class VersionValidatorService
                 $tagName = isset($latestRelease['tag_name']) ? $latestRelease['tag_name'] : null;
 
                 // successful check, override defaults
-                $currentCheckData->actualVersion = $tagName ? Tools::substr($tagName, 1) : null; // remove leading 'v' from tag
+                $currentCheckData->actualVersion = $tagName;
                 $currentCheckData->checkSuccessful = true;
                 $currentCheckData->checkedTime = time();
             }

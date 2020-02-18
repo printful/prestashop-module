@@ -26,10 +26,6 @@
 
 require_once("BasePrintfulAdminController.php");
 
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
-use Printful\services\ConnectService;
-use Printful\structures\PrintfulConnectReturnData;
-
 /**
  * Class PrintfulDashboardController
  * @property Printful $module
@@ -47,39 +43,27 @@ class PrintfulConnectReturnController extends BasePrintfulAdminController
 
     /**
      * PrintfulDashboardController constructor.
-     * @throws PrestaShopException
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws Adapter_Exception
      */
     public function __construct()
     {
         parent::__construct();
 
         // set dependencies
-        $this->connectService = ServiceLocator::get(ConnectService::class);
+        $this->connectService = Printful::getService(Printful\services\ConnectService::class);
     }
 
     /**
      * Process Connect flow return routines
      * @return bool|ObjectModel|void
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
      */
     public function postProcess()
     {
-        $returnData = PrintfulConnectReturnData::buildFromArray(Tools::getAllValues());
-        $link = $this->context->link;
+        $credentials = Printful\structures\PrintfulCredentials::buildFromArray(Tools::getAllValues());
+        $this->connectService->setPrintfulCredentials($credentials);
 
-        if ($returnData->status === self::CONNECT_STATUS_SUCCESS) {
-            $this->connectService->processConnectReturnData($returnData);
-
-            $params = array('connected' => 1);
-            $dashboardLink = $link->getAdminLink(Printful::CONTROLLER_DASHBOARD, true, array(), $params);
-            Tools::redirectAdmin($dashboardLink);
-        }
-
-        // could not connect, return to connect page
-        $params = array('errorMessage' => $returnData->errorMessage);
-        $connectLink = $link->getAdminLink(Printful::CONTROLLER_CONNECT, true, array(), $params);
-        Tools::redirectAdmin($connectLink);
+        $params = array('connected' => 1);
+        $dashboardLink = (new LinkCore())->getAdminLink(Printful::CONTROLLER_DASHBOARD, true, array(), $params);
+        Tools::redirectAdmin($dashboardLink);
     }
 }

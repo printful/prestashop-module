@@ -11,8 +11,6 @@ namespace Printful\services;
 
 use Configuration;
 use InvalidArgumentException;
-use PrestaShopDatabaseException;
-use PrestaShopException;
 use Printful;
 use Printful\structures\PrintfulAuthData;
 use Printful\structures\PrintfulCredentials;
@@ -65,27 +63,54 @@ class ConnectService
     {
         $apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
         $serviceKeyId = Configuration::get(Printful::CONFIG_PRINTFUL_SERVICE_KEY_ID);
-
         $webService = $this->webserviceService->getWebserviceById($serviceKeyId);
 
         return $apiKey && $webService;
     }
 
     /**
-     * Builds auth redirect uri
-     * @param PrintfulAuthData $authData
      * @return string
      */
-    public function buildConnectUrl(PrintfulAuthData $authData)
+    public function buildReturnUrl()
+    {
+        $adminLink = (new \LinkCore())->getAdminLink(Printful::CONTROLLER_CONNECT_RETURN, true);
+
+        return _PS_BASE_URL_ . '/' . basename(_PS_ADMIN_DIR_) . '/' . $adminLink;
+    }
+
+    /**
+     * Builds auth redirect uri
+     * @param PrintfulAuthData $authData
+     * @param string $returnUrl
+     * @return string
+     */
+    public function buildConnectUrl(PrintfulAuthData $authData, $returnUrl = null)
     {
         $url = Printful::getPrintfulHost() . self::CONNECT_URL;
 
         $params = array(
             'storeAddress' => $authData->storeAddress,
-            'serviceKey' => $authData->serviceKey
+            'serviceKey' => $authData->serviceKey,
         );
 
+        if ($returnUrl) {
+            $params['returnUrl'] = $returnUrl;
+        }
+
         return $url . '?' . http_build_query($params);
+    }
+
+    /**
+     * Return disconnect url
+     * @return string
+     */
+    public static function getDisconnectUrl()
+    {
+        $link = new \Link();
+
+        return Printful::isOlderPSVersion()
+            ? $link->getAdminLink(Printful::CONTROLLER_CONNECT) . '&action=disconnect'
+            : $link->getAdminLink(Printful::CONTROLLER_CONNECT, true, array(), array('action' => 'disconnect'));
     }
 
     /**
@@ -101,6 +126,18 @@ class ConnectService
         // save necessary data to configuration
         Configuration::updateValue(Printful::CONFIG_PRINTFUL_API_KEY, $credentials->apiAccessKey);
         Configuration::updateValue(Printful::CONFIG_PRINTFUL_IDENTITY, $credentials->identity);
+    }
+
+    /**
+     *  Process Connect flow returned data
+     *
+     * @param PrintfulConnectReturnData $data
+     */
+    public function processConnectReturnData(PrintfulConnectReturnData $data)
+    {
+        // save necessary data to configuration
+        Configuration::updateValue(Printful::CONFIG_PRINTFUL_API_KEY, $data->apiAccessKey);
+        Configuration::updateValue(Printful::CONFIG_PRINTFUL_IDENTITY, $data->identity);
     }
 
     /**

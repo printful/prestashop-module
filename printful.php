@@ -7,22 +7,14 @@
  * @license   GPL 3 license see LICENSE.txt
  */
 
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
-use Printful\services\ConnectService;
-use Printful\services\InstallService;
-use Printful\services\UninstallService;
-use Printful\services\VersionValidatorService;
-use Printful\services\WebserviceService;
-use Printful\structures\PrintfulAuthData;
-use Printful\structures\PrintfulPluginVersionCheckData;
+require_once dirname(__FILE__) . '/vendor/autoload.php';
+require_once dirname(__FILE__) . '/src/services/web/WebserviceSpecificManagementPrintful.php';
+require_once dirname(__FILE__) . '/controllers/admin/PrintfulConnectController.php';
+require_once dirname(__FILE__) . '/controllers/admin/PrintfulConnectReturnController.php';
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-
-require_once dirname(__FILE__) . '/vendor/autoload.php';
-require_once dirname(__FILE__) . '/src/services/web/WebserviceSpecificManagementPrintful.php';
-require_once dirname(__FILE__) . '/controllers/admin/PrintfulConnectController.php';
 
 /**
  * Class Printful
@@ -63,6 +55,7 @@ class Printful extends Module
     const CONTROLLER_DASHBOARD = 'PrintfulDashboard';
     const CONTROLLER_ORDERS = 'PrintfulOrders';
     const CONTROLLER_CONNECT = 'PrintfulConnect';
+    const CONTROLLER_CONNECT_RETURN = 'PrintfulConnectReturn';
 
     // Printful host
     const PRINTFUL_HOST = 'https://www.printful.com/';
@@ -81,14 +74,14 @@ class Printful extends Module
     {
         $this->name = 'printful';
         $this->tab = 'others';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'Printful';
         $this->need_instance = 1;
 
-        $this->ps_versions_compliancy = array(
-            'min' => '1.7',
+        $this->ps_versions_compliancy = [
+            'min' => '1.6.1',
             'max' => _PS_VERSION_,
-        );
+        ];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -97,11 +90,12 @@ class Printful extends Module
         $this->description = $this->l('Use Printful to design and sell your own shirts, hats, bags and more! We will handle inventory, production, and shipping, so you can focus on building your store.');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
 
+
         if (!self::isConnected()) {
             $this->warning = $this->l('Your store is not connected to Printful');
         } else {
-            /** @var VersionValidatorService $versionValidator */
-            $versionValidator = ServiceLocator::get(VersionValidatorService::class);
+            /** @var Printful\services\VersionValidatorService $versionValidator */
+            $versionValidator = self::getService(Printful\services\VersionValidatorService::class);
             $data = $versionValidator->validateVersion($this->version);
             if ($data && !$data->isValidVersion) {
                 $this->warning = $this->l('Your current Printful module is out of date');
@@ -122,11 +116,11 @@ class Printful extends Module
         }
 
         try {
-            /** @var InstallService $installService */
-            $installService = ServiceLocator::get(InstallService::class);
+            /** @var Printful\services\InstallService $installService */
+            $installService = self::getService(Printful\services\InstallService::class);
 
             return $installService->install($this);
-        } catch (Exception $exception) {
+        } catch (Throwable $throwable) {
             // notify PF about failed install?
             return false;
         }
@@ -143,14 +137,30 @@ class Printful extends Module
         }
 
         try {
-            /** @var UninstallService $uninstallService */
-            $uninstallService = ServiceLocator::get(UninstallService::class);
+            /** @var Printful\services\UninstallService $uninstallService */
+            $uninstallService = self::getService(Printful\services\UninstallService::class);
 
             return $uninstallService->uninstall($this);
         } catch (Exception $exception) {
             // notify PF about failed uninstall?
             return false;
         }
+    }
+
+    /**
+     * @param string $className
+     * @return mixed|object
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    public static function getService($className)
+    {
+        if (class_exists('Adapter_ServiceLocator')) {
+            return Adapter_ServiceLocator::get($className);
+        } elseif (class_exists('PrestaShop\PrestaShop\Adapter\ServiceLocator')) {
+            return PrestaShop\PrestaShop\Adapter\ServiceLocator::get($className);
+        }
+
+        throw new Exception('No service locator found');
     }
 
     /**
@@ -194,12 +204,18 @@ class Printful extends Module
     }
 
     /**
+     * @return bool|int
+     */
+    public static function isOlderPSVersion()
+    {
+        return version_compare(_PS_VERSION_, '1.7.0', '<');
+    }
+
+    /**
      * Returns auth data
      *
-     * @return PrintfulAuthData
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @return Printful\structures\PrintfulAuthData
+     * @throws Adapter_Exception
      */
     public function getAuthData()
     {
@@ -207,10 +223,10 @@ class Printful extends Module
             return null;
         }
 
-        /** @var ConnectService $connectService */
-        $connectService = ServiceLocator::get(ConnectService::class);
-        /** @var WebserviceService $webService */
-        $webService = ServiceLocator::get(WebserviceService::class);
+        /** @var Printful\services\ConnectService $connectService */
+        $connectService = self::getService(Printful\services\ConnectService::class);
+        /** @var Printful\services\WebserviceService $webService */
+        $webService = self::getService(Printful\services\WebserviceService::class);
 
         $connectedWebService = $webService->getConnectedWebservice();
         return $connectService->buildAuthData($connectedWebService);
@@ -220,23 +236,24 @@ class Printful extends Module
      * Check if module is connected to Printful
      * @return bool
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws Adapter_Exception
      */
     public function isConnected()
     {
-        /** @var ConnectService $service */
-        $service = ServiceLocator::get(ConnectService::class);
+        /** @var Printful\services\ConnectService $service */
+        $service = self::getService(Printful\services\ConnectService::class);
 
         return $service->isConnected();
     }
 
     /**
-     * @return PrintfulPluginVersionCheckData|null
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @return Printful\structures\PrintfulPluginVersionCheckData|null
+     * @throws Adapter_Exception
      */
     public static function validateCurrentVersion()
     {
-        /** @var VersionValidatorService $versionValidator */
-        $versionValidator = ServiceLocator::get(VersionValidatorService::class);
+        /** @var Printful\services\VersionValidatorService $versionValidator */
+        $versionValidator = self::getService(Printful\services\VersionValidatorService::class);
 
         return $versionValidator->validateVersion(Printful::getInstance()->version);
     }
