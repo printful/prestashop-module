@@ -74,7 +74,7 @@ class Printful extends Module
     {
         $this->name = 'printful';
         $this->tab = 'others';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'Printful';
         $this->need_instance = 1;
 
