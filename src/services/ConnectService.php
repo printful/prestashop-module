@@ -67,7 +67,7 @@ class ConnectService
      */
     public function isConnected()
     {
-        $apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
+        $apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY);
         $serviceKeyId = Configuration::get(Printful::CONFIG_PRINTFUL_SERVICE_KEY_ID);
         $webService = $this->webserviceService->getWebserviceById($serviceKeyId);
 
