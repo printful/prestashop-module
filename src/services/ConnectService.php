@@ -48,7 +48,13 @@ class ConnectService
         $authData->serviceKey = $webService ? $webService->key : null;
 
         $authData->identity = Configuration::get(Printful::CONFIG_PRINTFUL_IDENTITY);
+
         $authData->apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
+        $oauthKey = Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY);
+        if ($oauthKey) {
+            $authData->apiKey = $oauthKey;
+            $authData->isOauth = true;
+        }
 
         $authData->pluginVersion = Printful::getInstance()->version;
 
@@ -91,6 +97,7 @@ class ConnectService
         $params = array(
             'storeAddress' => $authData->storeAddress,
             'serviceKey' => $authData->serviceKey,
+            'version' => Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY),
         );
 
         if ($returnUrl) {
@@ -124,7 +131,7 @@ class ConnectService
         }
 
         // save necessary data to configuration
-        Configuration::updateValue(Printful::CONFIG_PRINTFUL_API_KEY, $credentials->apiAccessKey);
+        Configuration::updateValue(Printful::CONFIG_PRINTFUL_OAUTH_KEY, $credentials->apiAccessKey);
         Configuration::updateValue(Printful::CONFIG_PRINTFUL_IDENTITY, $credentials->identity);
     }
 

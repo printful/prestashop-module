@@ -124,7 +124,11 @@ abstract class BasePrintfulClient
         $headers = array();
 
         if ($authData) {
-            $headers[] = 'Authorization: Basic ' . base64_encode($authData->apiKey);
+            if ($authData->isOauth) {
+                $headers[] = 'Authorization: Bearer ' . $authData->apiKey;
+            } else {
+                $headers[] = 'Authorization: Basic ' . base64_encode($authData->apiKey);
+            }
         }
 
         return $headers;
