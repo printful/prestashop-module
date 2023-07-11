@@ -25,7 +25,7 @@ class Printful extends Module
     const ENV_PROD = 'prod';
 
     // active env
-    const ENV = self::ENV_PROD;
+    const ENV = self::ENV_DEV;
 
     // PF Configuration keys
     const CONFIG_PRINTFUL_SERVICE_KEY_ID = 'PRINTFUL_SERVICE_KEY_ID';
@@ -61,11 +61,11 @@ class Printful extends Module
 
     // Printful host
     const PRINTFUL_HOST = 'https://www.printful.com/';
-    const PRINTFUL_HOST_DEV = 'http://www.printful.test/';
+    const PRINTFUL_HOST_DEV = 'https://www.printful.test/';
 
     // Printful API host
     const PRINTFUL_API_HOST = 'https://api.printful.com';
-    const PRINTFUL_API_HOST_DEV = 'http://api.printful.test';
+    const PRINTFUL_API_HOST_DEV = 'https://api.printful.test';
 
     const PRINTFUL_PLUGIN_PATH = 'download-plugin/prestashop';
 

@@ -27,13 +27,19 @@ class ConnectService
     /** @var WebserviceService */
     private $webserviceService;
 
+    /** @var AuthMigrationService */
+    private $authMigrationService;
+
     /**
      * ConnectService constructor.
      * @param WebserviceService $webserviceService
      */
-    public function __construct(WebserviceService $webserviceService)
-    {
+    public function __construct(
+        WebserviceService $webserviceService,
+        AuthMigrationService $authMigrationService
+    ) {
         $this->webserviceService = $webserviceService;
+        $this->authMigrationService = $authMigrationService;
     }
 
     /**
@@ -42,6 +48,16 @@ class ConnectService
      */
     public function buildAuthData(WebserviceKeyCore $webService = null)
     {
+        $legacyToken = Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
+
+        if ($this->shouldMigrateAuth()) {
+            try {
+                $this->authMigrationService->migrate($legacyToken);
+            } catch (\Throwable $throwable) {
+                // failed migration should not be a fatal error
+            }
+        }
+
         $authData = new PrintfulAuthData();
 
         $authData->storeAddress = Printful::getStoreAddress();
@@ -49,7 +65,7 @@ class ConnectService
 
         $authData->identity = Configuration::get(Printful::CONFIG_PRINTFUL_IDENTITY);
 
-        $authData->apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
+        $authData->apiKey = $legacyToken;
         $oauthKey = Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY);
         if ($oauthKey) {
             $authData->apiKey = $oauthKey;
@@ -61,17 +77,33 @@ class ConnectService
         return $authData;
     }
 
+    public function shouldMigrateAuth()
+    {
+        return $this->hasLegacyAccess() && !$this->hasOAuthAccess();
+    }
+
+    public function hasLegacyAccess()
+    {
+        return (bool)Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
+    }
+
+    public function hasOAuthAccess()
+    {
+        return (bool)Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY);
+    }
+
     /**
      * If we have API key from PF and valid Webservice, consider we are connected
      * @return bool
      */
     public function isConnected()
     {
-        $apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY);
+        $apiKey = Configuration::get(Printful::CONFIG_PRINTFUL_API_KEY);
+        $oAuthKey = Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY);
         $serviceKeyId = Configuration::get(Printful::CONFIG_PRINTFUL_SERVICE_KEY_ID);
         $webService = $this->webserviceService->getWebserviceById($serviceKeyId);
 
-        return $apiKey && $webService;
+        return ($apiKey || $oAuthKey) && $webService;
     }
 
     /**

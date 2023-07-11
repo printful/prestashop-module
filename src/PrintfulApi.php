@@ -64,6 +64,42 @@ class PrintfulApi
     }
 
     /**
+     * Get OAuth tokens from legacy API key
+     * @param PrintfulAuthData $authData
+     * @return string|null
+     */
+    public function getOAuthTokens(PrintfulAuthData $authData)
+    {
+        try {
+            $response = $this->client->post(PrintfulClient::ENDPOINT_GET_OAUTH_CREDENTIALS, array(), $authData);
+
+            return isset($response['token']) ? $response['token'] : null;
+        } catch (PrintfulClientException $exception) {
+            $this->logClientException($exception);
+        }
+
+        return null;
+    }
+
+    /**
+     * Confirm successful migration
+     * @param PrintfulAuthData $authData
+     * @return array|null
+     */
+    public function confirmMigration(PrintfulAuthData $authData)
+    {
+        try {
+            $response = $this->client->post(PrintfulClient::ENDPOINT_FINALIZE_MIGRATION, array(), $authData);
+
+            return isset($response['data']) ? $response['data'] : array();
+        } catch (PrintfulClientException $exception) {
+            $this->logClientException($exception);
+        }
+
+        return null;
+    }
+
+    /**
      * Send error message to PF for logging
      * @param $message
      */
