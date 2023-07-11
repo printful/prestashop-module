@@ -25,7 +25,7 @@ class Printful extends Module
     const ENV_PROD = 'prod';
 
     // active env
-    const ENV = self::ENV_DEV;
+    const ENV = self::ENV_PROD;
 
     // PF Configuration keys
     const CONFIG_PRINTFUL_SERVICE_KEY_ID = 'PRINTFUL_SERVICE_KEY_ID';
