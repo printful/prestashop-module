@@ -129,7 +129,7 @@ class ConnectService
         $params = array(
             'storeAddress' => $authData->storeAddress,
             'serviceKey' => $authData->serviceKey,
-            'version' => Configuration::get(Printful::CONFIG_PRINTFUL_OAUTH_KEY),
+            'version' => Printful::getInstance()->version,
         );
 
         if ($returnUrl) {
