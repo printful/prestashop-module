@@ -35,6 +35,8 @@ class PrintfulAuthData
      */
     public $apiKey;
 
+    public $isOauth = false;
+
     /**
      * Current plugin verion
      * @var string

@@ -89,8 +89,8 @@ abstract class BasePrintfulClient
 
         if ($method === self::REQUEST_POST) {
             $options[CURLOPT_POST] = 1;
-            $options[CURLOPT_POSTFIELDS] = $params;
-        };
+            $options[CURLOPT_POSTFIELDS] = http_build_query($params);
+        }
 
         return $options;
     }
@@ -124,7 +124,11 @@ abstract class BasePrintfulClient
         $headers = array();
 
         if ($authData) {
-            $headers[] = 'Authorization: Basic ' . base64_encode($authData->apiKey);
+            if ($authData->isOauth) {
+                $headers[] = 'Authorization: Bearer ' . $authData->apiKey;
+            } else {
+                $headers[] = 'Authorization: Basic ' . base64_encode($authData->apiKey);
+            }
         }
 
         return $headers;

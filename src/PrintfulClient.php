@@ -24,12 +24,16 @@ class PrintfulClient extends BasePrintfulClient
     const ENDPOINT_LOG_ERROR = '/prestashop/log-error';
     const ENDPOINT_PERMISSIONS = '/prestashop/get-required-permissions';
     const ENDPOINT_ORDERS = '/orders';
+    const ENDPOINT_GET_OAUTH_CREDENTIALS = '/integration-plugin/get-o-auth-credentials';
+    const ENDPOINT_FINALIZE_MIGRATION = '/integration-plugin/finalize-migration';
 
     const ENDPOINTS = array(
         self::ENDPOINT_STATS,
         self::ENDPOINT_LOG_ERROR,
         self::ENDPOINT_PERMISSIONS,
         self::ENDPOINT_ORDERS,
+        self::ENDPOINT_GET_OAUTH_CREDENTIALS,
+        self::ENDPOINT_FINALIZE_MIGRATION,
     );
 
     /**

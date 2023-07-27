@@ -31,6 +31,7 @@ class Printful extends Module
     const CONFIG_PRINTFUL_SERVICE_KEY_ID = 'PRINTFUL_SERVICE_KEY_ID';
     const CONFIG_PRINTFUL_IDENTITY = 'PRINTFUL_IDENTITY';
     const CONFIG_PRINTFUL_API_KEY = 'PRINTFUL_API_KEY';
+    const CONFIG_PRINTFUL_OAUTH_KEY = 'PRINTFUL_OAUTH_KEY';
     const CONFIG_PRINTFUL_PLUGIN_VERSION = 'PRINTFUL_PLUGIN_VERSION';
     const CONFIG_PRINTFUL_SAPI_NAME = 'PRINTFUL_SAPI_NAME';
     const CONFIG_PRINTFUL_VERSION_CHECK_DATA = 'PRINTFUL_VERSION_CHECK_DATA';
@@ -44,6 +45,7 @@ class Printful extends Module
         self::CONFIG_PRINTFUL_SERVICE_KEY_ID,
         self::CONFIG_PRINTFUL_IDENTITY,
         self::CONFIG_PRINTFUL_API_KEY,
+        self::CONFIG_PRINTFUL_OAUTH_KEY,
         self::CONFIG_PRINTFUL_PLUGIN_VERSION,
         self::CONFIG_PRINTFUL_SAPI_NAME,
         self::CONFIG_PRINTFUL_VERSION_CHECK_DATA,
@@ -59,11 +61,11 @@ class Printful extends Module
 
     // Printful host
     const PRINTFUL_HOST = 'https://www.printful.com/';
-    const PRINTFUL_HOST_DEV = 'http://www.printful.test/';
+    const PRINTFUL_HOST_DEV = 'https://www.printful.test/';
 
     // Printful API host
     const PRINTFUL_API_HOST = 'https://api.printful.com';
-    const PRINTFUL_API_HOST_DEV = 'http://api.printful.test';
+    const PRINTFUL_API_HOST_DEV = 'https://api.printful.test';
 
     const PRINTFUL_PLUGIN_PATH = 'download-plugin/prestashop';
 
@@ -74,13 +76,13 @@ class Printful extends Module
     {
         $this->name = 'printful';
         $this->tab = 'others';
-        $this->version = '1.0.3';
+        $this->version = '1.1.0';
         $this->author = 'Printful';
         $this->need_instance = 1;
 
         $this->ps_versions_compliancy = [
             'min' => '1.6.1',
-            'max' => _PS_VERSION_,
+            'max' => '1.7.6',
         ];
         $this->bootstrap = true;
 
