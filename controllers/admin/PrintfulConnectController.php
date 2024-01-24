@@ -48,7 +48,7 @@ class PrintfulConnectController extends BasePrintfulAdminController
      */
     public function ajaxProcessCheckConnectionStatus()
     {
-        echo Tools::jsonEncode(array('status' => $this->connectService->isConnected()));
+        echo json_encode(array('status' => $this->connectService->isConnected()));
         die;
     }
 

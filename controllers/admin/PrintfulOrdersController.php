@@ -37,14 +37,16 @@ class PrintfulOrdersController extends BasePrintfulAdminController
     {
         parent::initContent();
 
-        $this->addCSS(_PS_ADMIN_DIR_ . '/themes/new-theme/public/theme.css');
         $this->addCSS($this->getCssPath('orders.css'));
 
         $authData = $this->module->getAuthData();
         $orders = $this->api->getStoreOrders($authData);
-        if (is_null($orders)) {
-            $this->warnings[] = $this->trans('Failed to load orders');
-        }
+
+        if (!is_array($orders)) {
+            $this->warnings[] = $this->trans('Failed to load order, please reconnect to Printful');
+            return;
+         }
+
 
         $this->renderTemplate('orders', array(
             'title' => $this->module->l('Orders'),
