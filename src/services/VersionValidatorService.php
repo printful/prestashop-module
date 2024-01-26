@@ -58,7 +58,7 @@ class VersionValidatorService
             ));
 
             $releaseJsonData = Tools::file_get_contents(self::PLUGIN_RELEASE_DATA_URL, false, $context);
-            $releaseData = Tools::jsonDecode($releaseJsonData, true);
+            $releaseData = json_decode($releaseJsonData, true);
 
             // new result with defaults
             $currentCheckData = new PrintfulPluginVersionCheckData();
@@ -83,7 +83,7 @@ class VersionValidatorService
      */
     protected function storeVersionCheckData(PrintfulPluginVersionCheckData $data)
     {
-        $jsonData = Tools::jsonEncode($data->toArray());
+        $jsonData = json_encode($data->toArray());
 
         Configuration::set(Printful::CONFIG_PRINTFUL_VERSION_CHECK_DATA, $jsonData);
     }

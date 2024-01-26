@@ -1,5 +1,6 @@
 .printful-quick-links {
-    position: relative;
+    display: flex;
+    flex-wrap: wrap;
     margin-bottom: 30px;
 }
 
@@ -8,7 +9,7 @@
     background: #fff;
     border: solid 1px #e1e1e1;
     float: left;
-    padding: 20px;
+    padding: 10px;
     margin-right: 25px;
     margin-bottom: 25px;
     text-align: center;

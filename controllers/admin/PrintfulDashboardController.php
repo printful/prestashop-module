@@ -38,7 +38,6 @@ class PrintfulDashboardController extends BasePrintfulAdminController
     {
         parent::initContent();
 
-        $this->addCSS(_PS_ADMIN_DIR_ . '/themes/new-theme/public/theme.css');
         $this->addCSS($this->getCssPath('dashboard.css'));
 
         $this->renderTemplate('dashboard', array(
@@ -73,7 +72,7 @@ class PrintfulDashboardController extends BasePrintfulAdminController
             ),
             array(
                 'label' => $this->l('Reports'),
-                'icon' => 'table_chart',
+                'icon' => 'featured_play_list',
                 'link' => $host . 'dashboard/reports',
             ),
             array(
