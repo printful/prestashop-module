@@ -82,7 +82,7 @@ class Printful extends Module
 
         $this->ps_versions_compliancy = [
             'min' => '1.7.6',
-            'max' => '8.1.3',
+            'max' => '8.1.7',
         ];
         $this->bootstrap = true;
 
